@@ -1,4 +1,5 @@
 extends Area2D
+signal hit
 
 
 export var speed = 400 # How fast the player will move (pixels/sec).
@@ -44,3 +45,18 @@ func _process(delta):
 	elif velocity.y != 0:
 		$AnimatedSprite.animation = "up"
 		$AnimatedSprite.flip_v = velocity.y > 0
+
+
+func _on_Player_body_entered(body):
+	hide() # Player disappears after being hit.
+	emit_signal("hit")
+	# Must be deferred as we can't change physics properties on a physics callback.
+	# we have to disable player's collision so we dont trigger "hit" again
+	# set_deferred() tells Godot to wait to disable the shape until it's safe to do so.
+	$CollisionShape2D.set_deferred("disabled", true)
+
+# Resetet player when starting a new game
+func start(pos):
+	position = pos
+	show()
+	$CollisionShape2D.disabled = false
